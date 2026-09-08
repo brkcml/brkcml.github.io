@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>brkcml — Bağımsız Mobil Uygulama Geliştiricisi</title>
+<meta name="description" content="brkcml tarafından geliştirilen mobil uygulamalar: günlük hayatı kolaylaştıran araçlar ve keyifli, kısa süreli oyunlar.">
+
+<!--
+  ============================================================
+  GELİŞTİRME NOTLARI (bu blok siteye görünmez, senin içindir)
+  ============================================================
+  1) Yeni bir Play Store uygulaması eklemek için:
+     Aşağıdaki <script> içindeki "apps" dizisine yeni bir obje ekle.
+     Sıra otomatik olarak sayfaya basılıyor, HTML'e dokunmana gerek yok.
+
+  2) Web oyunu yayınladığında:
+     "webGames" dizisine obje ekle. Dizi boşken "yakında" kutuları
+     otomatik gösteriliyor; bir tane bile oyun eklersen kutular
+     gerçek oyun kartlarına dönüşür.
+
+  3) Renk / yazı tipi değiştirmek istersen en üstteki :root
+     içindeki değişkenleri (--bg, --accent-violet vb.) düzenle,
+     tüm sayfa oradan besleniyor.
+
+  4) Uygulama ikonu olarak gerçek görsel koymak istersen,
+     .app-icon içindeki emojiyi <img> ile değiştirebilirsin.
+
+  5) Bu dosyayı olduğu gibi bir hosting'e (Netlify, GitHub Pages,
+     kendi alan adın vb.) yükleyip yayına alabilirsin. Ekstra bir
+     kurulum veya build adımı gerekmiyor.
+  ============================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #12141c;
+    --surface: #1b1e29;
+    --surface-2: #232739;
+    --border: #2c3040;
+    --text: #f2f3f8;
+    --text-muted: #9099b3;
+    --accent-violet: #6c5ce7;
+    --accent-violet-soft: rgba(108,92,231,0.16);
+    --accent-teal: #2dd4bf;
+    --accent-teal-soft: rgba(45,212,191,0.14);
+    --accent-amber: #ffb13d;
+    --accent-amber-soft: rgba(255,177,61,0.15);
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --font-display: 'Baloo 2', sans-serif;
+    --font-body: 'Manrope', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,h2,h3{
+    font-family: var(--font-display);
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  p{ margin: 0; }
+
+  a{ color: inherit; text-decoration: none; }
+
+  .wrap{
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  section{ padding: 108px 0; }
+
+  :focus-visible{
+    outline: 2px solid var(--accent-teal);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Nav ---------- */
+  header{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(18,20,28,0.82);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+  .brand{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: 0.2px;
+  }
+  .brand span{ color: var(--accent-violet); }
+  nav ul{
+    list-style:none;
+    display:flex;
+    gap: 28px;
+    margin:0; padding:0;
+  }
+  nav a{
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    transition: color .15s ease;
+  }
+  nav a:hover{ color: var(--text); }
+  .nav-toggle{ display:none; }
+
+  @media (max-width: 720px){
+    nav ul{
+      position:absolute;
+      top: 100%; left:0; right:0;
+      flex-direction:column;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 28px;
+      gap: 16px;
+      display:none;
+    }
+    nav ul.open{ display:flex; }
+    .nav-toggle{
+      display:block;
+      background:none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 6px 12px;
+    }
+  }
+
+  /* ---------- Hero ---------- */
+  #hero{
+    padding-top: 88px;
+    padding-bottom: 80px;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 56px;
+    align-items:center;
+  }
+  .hero h1{
+    font-size: clamp(2.2rem, 4vw, 3.1rem);
+    font-weight: 700;
+    color: var(--text);
+  }
+  .hero p.lead{
+    margin-top: 20px;
+    max-width: 46ch;
+    color: var(--text-muted);
+    font-size: 1.08rem;
+  }
+  .hero-actions{
+    margin-top: 34px;
+    display:flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 13px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.96rem;
+    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn-primary{
+    background: var(--accent-violet);
+    color: #fff;
+  }
+  .btn-primary:hover{ transform: translateY(-2px); background:#7d6ff0; }
+  .btn-ghost{
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover{ border-color: var(--accent-teal); transform: translateY(-2px); }
+
+  .hero-stats{
+    display:flex;
+    gap: 28px;
+    margin-top: 44px;
+  }
+  .stat b{
+    display:block;
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+  }
+  .stat span{
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+
+  /* phone mockup */
+  .phone{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 34px;
+    padding: 18px;
+    max-width: 300px;
+    margin: 0 auto;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.55);
+  }
+  .phone-status{
+    display:flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 4px 8px 16px;
+  }
+  .phone-dots{ display:flex; gap:4px; }
+  .phone-dots span{
+    width:5px; height:5px; border-radius:50%;
+    background: var(--text-muted);
+    display:inline-block;
+  }
+  .phone-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .phone-icon{
+    aspect-ratio: 1;
+    border-radius: 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 1.5rem;
+    opacity: 0;
+    transform: scale(.6);
+    animation: pop .45s ease forwards;
+    overflow: hidden;
+  }
+  .phone-icon img{
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display:block;
+  }
+  .phone-icon:nth-child(1){ background: var(--accent-violet-soft); animation-delay: .1s; }
+  .phone-icon:nth-child(2){ background: var(--accent-teal-soft); animation-delay: .2s; }
+  .phone-icon:nth-child(3){ background: var(--accent-amber-soft); animation-delay: .3s; }
+  .phone-icon:nth-child(4){ background: var(--accent-amber-soft); animation-delay: .4s; }
+  .phone-icon:nth-child(5){ background: var(--accent-violet-soft); animation-delay: .5s; }
+  .phone-icon:nth-child(6){ background: var(--accent-teal-soft); animation-delay: .6s; }
+
+  @keyframes pop{
+    to{ opacity:1; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .phone-icon{ animation: none; opacity:1; transform:none; }
+  }
+
+  /* ---------- Section headings ---------- */
+  .section-head{
+    max-width: 60ch;
+    margin-bottom: 48px;
+  }
+  .section-head h2{
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+  }
+  .section-head p{
+    margin-top: 14px;
+    color: var(--text-muted);
+    font-size: 1.02rem;
+  }
+
+  /* ---------- Apps ---------- */
+  #uygulamalar{ background: var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+
+  .app-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .app-card{
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display:flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .app-card:hover{ border-color: var(--accent-violet); transform: translateY(-3px); }
+
+  .app-top{ display:flex; align-items:flex-start; justify-content: space-between; gap: 12px; }
+
+  .app-icon{
+    width: 52px; height:52px;
+    border-radius: 15px;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 1.6rem;
+    flex-shrink:0;
+    overflow: hidden;
+  }
+  .app-icon img{
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display:block;
+  }
+
+  .tag{
+    font-size: 0.76rem;
+    padding: 5px 11px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .tag-gunluk{ background: var(--accent-teal-soft); color: var(--accent-teal); }
+  .tag-oyun{ background: var(--accent-amber-soft); color: var(--accent-amber); }
+  .tag-yasam{ background: var(--accent-violet-soft); color: #b6acf7; }
+
+  .app-card h3{ font-size: 1.15rem; font-weight: 600; }
+  .app-card p{ color: var(--text-muted); font-size: 0.94rem; }
+
+  .app-link{
+    margin-top: auto;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--accent-teal);
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+  }
+  .app-link svg{ width:14px; height:14px; }
+
+  .all-apps-banner{
+    margin-top: 40px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .all-apps-banner h3{ font-size: 1.15rem; font-weight: 600; }
+  .all-apps-banner p{ color: var(--text-muted); margin-top: 6px; font-size: 0.94rem; }
+
+  /* ---------- About ---------- */
+  .about-grid{
+    display:grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 56px;
+    align-items:center;
+  }
+  .about-grid p{
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    max-width: 52ch;
+  }
+  .about-chips{
+    display:flex; gap: 12px; margin-top: 24px; flex-wrap:wrap;
+  }
+  .chip{
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+  .about-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 30px;
+  }
+  .about-card .big-number{
+    font-family: var(--font-display);
+    font-size: 3rem;
+    color: var(--accent-violet);
+  }
+  .about-card .big-label{ color: var(--text-muted); margin-top: 4px; font-size: 0.95rem; }
+  .about-card hr{ border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+  /* ---------- Web games (yakında) ---------- */
+  #oyunlar{ background: var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+
+  .game-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .game-placeholder{
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 20px;
+    text-align:center;
+    color: var(--text-muted);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 10px;
+  }
+  .game-placeholder .icon{ font-size: 1.7rem; opacity: 0.8; }
+  .game-placeholder b{ color: var(--text); font-family: var(--font-display); font-size: 1rem; font-weight: 600; }
+
+  .game-card{
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+  }
+
+  .follow-note{
+    margin-top: 32px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+  .follow-note a{ color: var(--accent-teal); font-weight: 600; }
+
+  /* ---------- Contact / footer ---------- */
+  #iletisim .contact-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .contact-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+    transition: border-color .15s ease;
+  }
+  .contact-card:hover{ border-color: var(--accent-teal); }
+  .contact-card .icon{ font-size: 1.5rem; }
+  .contact-card b{ font-size: 1.02rem; }
+  .contact-card span{ color: var(--text-muted); font-size: 0.9rem; }
+
+  footer{
+    border-top: 1px solid var(--border);
+    padding: 30px 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    text-align:center;
+  }
+
+  @media (max-width: 860px){
+    .hero-grid, .about-grid{ grid-template-columns: 1fr; }
+    .hero-grid > div:last-child{ order:-1; }
+    #iletisim .contact-grid{ grid-template-columns: 1fr; }
+    section{ padding: 76px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">brk<span>cml</span></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Menüyü aç">☰</button>
+    <ul id="navMenu">
+      <li><a href="#uygulamalar">Uygulamalar</a></li>
+      <li><a href="#hakkimda">Hakkımda</a></li>
+      <li><a href="#oyunlar">Web Oyunları</a></li>
+      <li><a href="#iletisim">İletişim</a></li>
+    </ul>
+  </div>
+</header>
+
+<section id="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Cebindeki küçük kolaylıklar ve oyunlar buradan çıkıyor.</h1>
+      <p class="lead">Android tarafında günlük hayatı biraz kolaylaştıran araçlar ve kısa süreli, keyifli oyunlar geliştiriyorum.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#uygulamalar">Uygulamaları Gör</a>
+        <a class="btn btn-ghost" href="https://play.google.com/store/apps/dev?id=8920030065474205394" target="_blank" rel="noopener">Play Store Profilim</a>
+      </div>
+      <div class="hero-stats" id="heroStats"></div>
+    </div>
+    <div>
+      <div class="phone">
+        <div class="phone-status">
+          <span>09:41</span>
+          <div class="phone-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="phone-grid">
+          <div class="phone-icon"><img src="icons/yemek-defteri.png" alt=""></div>
+          <div class="phone-icon"><img src="icons/zar.png" alt=""></div>
+          <div class="phone-icon"><img src="icons/pati-takip.png" alt=""></div>
+          <div class="phone-icon"><img src="icons/football-headers.png" alt=""></div>
+          <div class="phone-icon"><img src="icons/kelime-oyunu-x.png" alt=""></div>
+          <div class="phone-icon"><img src="icons/kuran-ve-dualar.png" alt=""></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="uygulamalar">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Öne çıkan uygulamalar</h2>
+      <p>Play Store'da yayında olan uygulamalarımdan bir seçki. Her biri kendi Play Store sayfasına açılıyor.</p>
+    </div>
+    <div class="app-grid" id="appGrid"></div>
+
+    <div class="all-apps-banner">
+      <div>
+        <h3>Tüm uygulamalarım tek sayfada</h3>
+        <p>Geliştirici profilimdeki bütün uygulamaları Play Store üzerinden inceleyebilirsin.</p>
+      </div>
+      <a class="btn btn-primary" href="https://play.google.com/store/apps/dev?id=8920030065474205394" target="_blank" rel="noopener">Tüm Uygulamaları Gör</a>
+    </div>
+  </div>
+</section>
+
+<section id="hakkimda">
+  <div class="wrap about-grid">
+    <div>
+      <h2>Hakkımda</h2>
+      <p style="margin-top:18px;">Bireysel bir mobil uygulama geliştiricisiyim. Günlük hayatı biraz kolaylaştıran pratik araçlar ile kısa süreli, basit ve keyifli oyunlar tasarlıyorum.</p>
+      <div class="about-chips">
+        <span class="chip">Bireysel geliştirici</span>
+        <span class="chip">Android</span>
+        <span class="chip">Basit &amp; kullanışlı</span>
+      </div>
+    </div>
+    <div class="about-card">
+      <div class="big-number">8</div>
+      <div class="big-label">yayınlanmış uygulama</div>
+      <hr>
+      <div class="big-number">2</div>
+      <div class="big-label">odak alan: günlük hayat &amp; oyun</div>
+    </div>
+  </div>
+</section>
+
+<section id="oyunlar">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Yakında: web oyunları</h2>
+      <p>Tarayıcıdan doğrudan oynanabilen küçük oyunlar üzerinde çalışıyorum. Yayınladıkça bu alanda yerlerini alacaklar.</p>
+    </div>
+    <div class="game-grid" id="gameGrid"></div>
+    <p class="follow-note">Gelişmelerden haberdar olmak için <a href="https://www.instagram.com/brkcml89/" target="_blank" rel="noopener">Instagram'dan</a> takip edebilirsin.</p>
+  </div>
+</section>
+
+<section id="iletisim">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>İletişim</h2>
+      <p>Soru, öneri ya da geri bildirimlerin için buradan ulaşabilirsin.</p>
+    </div>
+    <div class="contact-grid">
+      <a class="contact-card" href="mailto:brkcml@gmail.com">
+        <span class="icon">✉️</span>
+        <b>E-posta</b>
+        <span>brkcml@gmail.com</span>
+      </a>
+      <a class="contact-card" href="https://www.instagram.com/brkcml89/" target="_blank" rel="noopener">
+        <span class="icon">📷</span>
+        <b>Instagram</b>
+        <span>@brkcml89</span>
+      </a>
+      <a class="contact-card" href="https://play.google.com/store/apps/dev?id=8920030065474205394" target="_blank" rel="noopener">
+        <span class="icon">▶️</span>
+        <b>Play Store</b>
+        <span>Geliştirici profili</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">© <span id="year"></span> brkcml — bireysel mobil uygulama geliştiricisi</div>
+</footer>
+
+<script>
+  // ============================================================
+  // UYGULAMALAR — yeni uygulama eklemek için buraya obje ekle
+  // "icon" alanına görsel yolu yazarsan (ör. "icons/yemek-defteri.png")
+  // emoji yerine gerçek ikon görünür. Boş bırakırsan emoji kullanılır.
+  // ============================================================
+  const apps = [
+    {
+      name: "Yemek Defteri",
+      emoji: "🍲",
+      icon: "icons/yemek-defteri.png",
+      desc: "Kendi tariflerini not al, dilediğin zaman geri dön.",
+      category: "gunluk",
+      url: "https://play.google.com/store/apps/details?id=com.brkcml.yemekdefteri"
+    },
+    {
+      name: "Anti-Air Command",
+      emoji: "🎯",
+      icon: "icons/anti-air-command.png",
+      desc: "Gökyüzünü savun, dalga dalga gelen tehditleri durdur.",
+      category: "oyun",
+      url: "https://play.google.com/store/apps/details?id=com.brkcmlstudio1.app"
+    },
+    {
+      name: "Nefis Tarifler",
+      emoji: "🍽️",
+      icon: "icons/nefis-tarifler.png",
+      desc: "Pratik ve nefis tarifleri adım adım keşfet.",
+      category: "gunluk",
+      url: "https://play.google.com/store/apps/details?id=com.brkcml.nefistarifler"
+    },
+    {
+      name: "Zar",
+      emoji: "🎲",
+      icon: "icons/zar.png",
+      desc: "Masa oyunlarının vazgeçilmezi, artık cebinde hazır.",
+      category: "oyun",
+      url: "https://play.google.com/store/apps/details?id=com.brkcml.zar"
+    },
+    {
+      name: "PatiTakip: Evcil Hayvan Bakımı",
+      emoji: "🐾",
+      icon: "icons/pati-takip.png",
+      desc: "Evcil dostunun aşı, mama ve bakım takibini tek yerden yap.",
+      category: "gunluk",
+      url: "https://play.google.com/store/apps/details?id=com.patipatitakip1.app"
+    },
+    {
+      name: "Football Headers - Kafa Oyunu",
+      emoji: "⚽",
+      icon: "icons/football-headers.png",
+      desc: "Kafa vuruşlarıyla golü bul, seriyi bozma.",
+      category: "oyun",
+      url: "https://play.google.com/store/apps/details?id=com.brkcml.football_headers"
+    },
+    {
+      name: "Kelime Oyunu X",
+      emoji: "🔤",
+      icon: "icons/kelime-oyunu-x.png",
+      desc: "Harfleri birleştir, kelimeleri bul, zamanla yarış.",
+      category: "oyun",
+      url: "https://play.google.com/store/apps/details?id=com.kelimeoyunux"
+    },
+    {
+      name: "Kur'an ve Dualar",
+      emoji: "🕌",
+      icon: "icons/kuran-ve-dualar.png",
+      desc: "Dua ve sureler her an cebinde, sade bir arayüzle.",
+      category: "yasam",
+      url: "https://play.google.com/store/apps/details?id=com.incege.super_app"
+    }
+  ];
+
+  // ============================================================
+  // WEB OYUNLARI — henüz boş. Bir oyun yayınladığında buraya
+  // { name, desc, url, emoji } şeklinde obje eklemen yeterli.
+  // Dizi doldukça "yakında" kutuları otomatik kaybolur.
+  // ============================================================
+  const webGames = [
+    // { name: "Örnek Oyun", desc: "Kısa açıklama.", emoji: "🎮", url: "https://..." }
+  ];
+
+  const categoryMeta = {
+    gunluk: { label: "Günlük hayat", cls: "tag-gunluk" },
+    oyun:   { label: "Oyun",         cls: "tag-oyun" },
+    yasam:  { label: "Yaşam",        cls: "tag-yasam" }
+  };
+
+  const externalIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg>`;
+
+  function renderApps(){
+    const grid = document.getElementById("appGrid");
+    grid.innerHTML = apps.map(app => {
+      const cat = categoryMeta[app.category];
+      const iconHtml = app.icon
+        ? `<img src="${app.icon}" alt="">`
+        : app.emoji;
+      return `
+        <div class="app-card">
+          <div class="app-top">
+            <div class="app-icon" style="background:var(--surface)">${iconHtml}</div>
+            <span class="tag ${cat.cls}">${cat.label}</span>
+          </div>
+          <h3>${app.name}</h3>
+          <p>${app.desc}</p>
+          <a class="app-link" href="${app.url}" target="_blank" rel="noopener">
+            Play Store'da Aç ${externalIcon}
+          </a>
+        </div>`;
+    }).join("");
+  }
+
+  function renderGames(){
+    const grid = document.getElementById("gameGrid");
+    if(webGames.length === 0){
+      grid.innerHTML = Array.from({length: 3}).map(() => `
+        <div class="game-placeholder">
+          <span class="icon">🎮</span>
+          <b>Yakında</b>
+          <span>Yeni bir web oyunu hazırlanıyor.</span>
+        </div>`).join("");
+      return;
+    }
+    grid.innerHTML = webGames.map(game => {
+      const iconHtml = game.icon ? `<img src="${game.icon}" alt="">` : (game.emoji || "🎮");
+      return `
+      <div class="game-card">
+        <div class="app-icon" style="background:var(--surface)">${iconHtml}</div>
+        <h3>${game.name}</h3>
+        <p>${game.desc || ""}</p>
+        <a class="app-link" href="${game.url}" target="_blank" rel="noopener">Oyna ${externalIcon}</a>
+      </div>`;
+    }).join("");
+  }
+
+  function renderStats(){
+    const gameCount = new Set(apps.filter(a => a.category === "oyun").map(a => a.name)).size;
+    const dailyCount = apps.length - gameCount - apps.filter(a => a.category === "yasam").length;
+    document.getElementById("heroStats").innerHTML = `
+      <div class="stat"><b>${apps.length}</b><span>Yayında uygulama</span></div>
+      <div class="stat"><b>${gameCount}</b><span>Oyun</span></div>
+      <div class="stat"><b>${dailyCount}</b><span>Günlük hayat aracı</span></div>
+    `;
+  }
+
+  renderApps();
+  renderGames();
+  renderStats();
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  const navToggle = document.getElementById("navToggle");
+  const navMenu = document.getElementById("navMenu");
+  navToggle.addEventListener("click", () => navMenu.classList.toggle("open"));
+  navMenu.querySelectorAll("a").forEach(a => a.addEventListener("click", () => navMenu.classList.remove("open")));
+</script>
+
+</body>
+</html>
